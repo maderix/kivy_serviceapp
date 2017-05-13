@@ -1,0 +1,26 @@
+{
+ "module" : {
+  "module_name" : "os",
+  "description" : "os module subset for tinyvpl library",
+  "schema" : {
+    "functions" : [{
+      "name" : "getcwd",
+      "description" : "get the current working directory",
+      "args_count" : "0",
+      "source" : "os.getcwd()",
+      "ret_type" : "string"
+    },{
+      "name" : "test_func",
+      "description" : "just a test function",
+      "args_count" : "3",
+      "args" : [{"arg_name", "arg1", "arg_type", "int"},
+                {"arg_name", "arg2", "arg_type", "float"},
+                {"arg_name", "arg3", "arg_type", "string"}],
+      "source" : "print arg1, arg2, arg3",
+      "ret_type" : "string"
+    }
+    ]
+  }
+ }
+}
+	
