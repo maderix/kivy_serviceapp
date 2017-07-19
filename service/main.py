@@ -4,22 +4,26 @@ from plyer import notification
 from cStringIO import StringIO
 import sys
 from kivy.resources import resource_find,resource_add_path
+import subprocess
 
 PORT = 5995
-IP = "192.168.0.100"
+IPDEF = "192.168.0.105"
+#IP = "127.0.0.1"
 HKEY_LEN = 256
 HKEY = "TinyVPL"
 CMD_LEN = 256
 MOD_DIR = '../assets'
 
-def exec_src(src):
-    old_stdout = sys.stdout
-    redirected_output = sys.stdout = StringIO()
-    exec src
-    sys.stdout = old_stdout
-    result = redirected_output.getvalue()
-    print 'Manjeet:result=' + result
-    return result
+def get_ip(ifname):
+   ipfile = open('ip','wb')
+   subprocess.call('ifconfig ' + ifname +  ' | grep "inet addr" | cut -b21-33' , shell=True, stdout=ipfile)
+   ipfile = open('ip','rb')
+   op = ipfile.read()
+   if op != '':
+       print 'Manjeet: IP:', op.split('\n')[0]
+       return op.split('\n')[0]
+   else:
+       return IPDEF
 
 def get_mod(modname,moddir):
     mod_str = ''
@@ -55,6 +59,7 @@ def combine_modules(module_dir):
 sock = socket.socket(socket.AF_INET, #INTERNET
                    socket.SOCK_STREAM) #TCP
 
+IP = get_ip('enp0s3')
 sock.bind((IP, PORT))
 print 'Manjeet: initing TCP service @', IP, ':',PORT
 
@@ -83,11 +88,21 @@ if __name__ =='__main__':
                 src += data
                 if 'def end_program():' in data:
                     break
-            result = exec_src(src)
+        #try:
             print "Manjeet: received source:", src
+            old_stdout = sys.stdout
+            redirected_output = sys.stdout = StringIO()
+            exec src
+            sys.stdout = old_stdout
+            result = redirected_output.getvalue()
+            print 'Manjeet:result=' + result
             notification.notify(title='python code notification',message=result,
                                         app_name="kivy_test")
             conn.send(result) #send response
+        #except:
+        #    print 'Unexpected error ',sys.exc_info()[0]
+        #    conn.close()
+        #    exit(0)
         elif cmd == "schema":
             print 'Manjeet : Processing schema'
             #get the module name
